@@ -1,12 +1,12 @@
-    import express from "express";
+import express from "express";
 import {
-    uploadModel,
-    getAllModels,
-    getModelById,
-    updateModel,
-    deleteModel,
-    searchModels,
-    uploadModelFiles
+  uploadModelFiles,
+  uploadModel,
+  getAllModels,
+  getModelById,
+  updateModel,
+  deleteModel,
+  searchModels
 } from "../controllers/model3DController.js";
 
 const router = express.Router();
