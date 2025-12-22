@@ -86,4 +86,31 @@ export const getAssetUrl = (path) => {
   return `${baseUrl}${path}`;
 };
 
+// Tripo AI API
+export const tripoAPI = {
+  // Generate from text prompt
+  generateFromText: (data) => {
+    return api.post('/tripo/generate/text', data);
+  },
+
+  // Generate from image URL
+  generateFromImageUrl: (data) => {
+    return api.post('/tripo/generate/image-url', data);
+  },
+
+  // Generate from image file
+  generateFromImageFile: (formData) => {
+    return api.post('/tripo/generate/image-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  // Check generation status
+  checkStatus: (taskId) => {
+    return api.get(`/tripo/status/${taskId}`);
+  },
+};
+
 export default api;
