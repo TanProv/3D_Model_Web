@@ -1,4 +1,4 @@
-    import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Heart, Share2, Download } from 'lucide-react';
 import Model3DViewer from '../components/Model3DViewer.jsx';
@@ -22,7 +22,7 @@ const ProductDetails = () => {
       setModel(response.data);
     } catch (error) {
       console.error('Error fetching model details:', error);
-      alert('Không thể tải thông tin sản phẩm');
+      alert('Unable to load product information');
       navigate('/products');
     } finally {
       setLoading(false);
@@ -30,7 +30,7 @@ const ProductDetails = () => {
   };
 
   const handleAddToCart = () => {
-    alert('Đã thêm vào giỏ hàng!');
+    alert('Added to cart!');
   };
 
   const handleShare = () => {
@@ -42,7 +42,7 @@ const ProductDetails = () => {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Đã sao chép link!');
+      alert('Link copied!');
     }
   };
 
@@ -51,7 +51,7 @@ const ProductDetails = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Đang tải chi tiết sản phẩm...</p>
+          <p className="text-gray-600 text-lg">Loading product details...</p>
         </div>
       </div>
     );
@@ -73,7 +73,7 @@ const ProductDetails = () => {
           className="flex items-center gap-2 text-gray-600 hover:text-purple-600 mb-6 transition"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Quay lại danh sách</span>
+          <span className="font-medium">Back to Products</span>
         </button>
 
         {/* Main Content */}
@@ -117,34 +117,34 @@ const ProductDetails = () => {
 
             {/* Description */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Mô tả sản phẩm</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Product Description</h3>
               <p className="text-gray-600 leading-relaxed">
-                {model.description || 'Chưa có mô tả cho sản phẩm này.'}
+                {model.description || 'No description available for this product.'}
               </p>
             </div>
 
             {/* Details */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin chi tiết</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Product Details</h3>
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Định dạng:</span>
+                  <span className="text-gray-600">Format:</span>
                   <span className="font-semibold text-gray-800">{model.format.toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Kích thước file:</span>
+                  <span className="text-gray-600">File Size:</span>
                   <span className="font-semibold text-gray-800">
                     {(model.fileSize / 1024 / 1024).toFixed(2)} MB
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Ngày tải lên:</span>
+                  <span className="text-gray-600">Upload Date:</span>
                   <span className="font-semibold text-gray-800">
-                    {new Date(model.uploadDate).toLocaleDateString('vi-VN')}
+                    {new Date(model.uploadDate).toLocaleDateString('en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Mã sản phẩm:</span>
+                  <span className="text-gray-600">Product ID:</span>
                   <span className="font-semibold text-gray-800">#{model.modelID}</span>
                 </div>
               </div>
@@ -157,7 +157,7 @@ const ProductDetails = () => {
                 className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="w-5 h-5" />
-                Thêm vào giỏ hàng
+                Add to Cart
               </button>
 
               <button
@@ -170,9 +170,9 @@ const ProductDetails = () => {
 
             {/* Additional Info */}
             <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-6">
-              <h4 className="font-semibold text-gray-800 mb-2">🎁 Ưu đãi đặc biệt</h4>
+              <h4 className="font-semibold text-gray-800 mb-2">🎁 Special Offer</h4>
               <p className="text-gray-700 text-sm">
-                Miễn phí vận chuyển cho đơn hàng đầu tiên. Đổi trả trong vòng 30 ngày.
+                Free shipping on first order. 30-day return policy.
               </p>
             </div>
           </div>

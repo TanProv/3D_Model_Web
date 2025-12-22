@@ -28,13 +28,13 @@ function Header({ cartCount, favoritesCount }) {
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link to="/" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Trang chủ
+              Homepage
             </Link>
             <Link to="/products" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Sản phẩm
+              Products
             </Link>
             <Link to="/admin" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Quản lý
+              Admin
             </Link>
           </nav>
 
@@ -44,13 +44,13 @@ function Header({ cartCount, favoritesCount }) {
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-600 hidden md:block">
-                  Xin chào, <span className="font-medium">{user?.name}</span>
+                  Hello, <span className="font-medium">{user?.name}</span>
                 </span>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
                 >
-                  Đăng xuất
+                  Log out
                 </button>
               </div>
             ) : (
@@ -58,7 +58,7 @@ function Header({ cartCount, favoritesCount }) {
                 to="/login"
                 className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
               >
-                Đăng nhập Admin
+                Log in as Admin
               </Link>
             )}
 

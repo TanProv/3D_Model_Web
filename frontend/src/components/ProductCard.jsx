@@ -42,7 +42,7 @@ const ProductCard = ({
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
               <Eye className="w-16 h-16 text-purple-400 mx-auto mb-2" />
-              <p className="text-gray-500">Xem 3D</p>
+              <p className="text-gray-500">View in 3D</p>
             </div>
           </div>
         )}
@@ -78,7 +78,7 @@ const ProductCard = ({
         </h3>
         
         <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-          {model.description || 'Không có mô tả'}
+          {model.description || 'No description'}
         </p>
 
         {/* Meta Info */}
@@ -98,7 +98,7 @@ const ProductCard = ({
             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2"
           >
             <Eye className="w-4 h-4" />
-            Xem 3D
+            View in 3D
           </Link>
           
           <button

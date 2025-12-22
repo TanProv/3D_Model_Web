@@ -5,7 +5,7 @@ import Home from './pages/Home.jsx';
 import Products from './pages/Products.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
 import Admin from './pages/Admin.jsx';
-import Login from './pages/Login.jsx'; // Thêm mới
+import Login from './pages/Login.jsx'; 
 import './App.css';
 
 // Tạo Auth Context
@@ -47,7 +47,7 @@ function App() {
       
       return { success: true };
     }
-    return { success: false, message: 'Email hoặc mật khẩu không đúng' };
+    return { success: false, message: 'Incorrect email or password' };
   };
 
   const logout = () => {
@@ -99,25 +99,25 @@ function App() {
                 <div>
                   <h3 className="text-xl font-bold mb-4">Jewelry 3D Gallery</h3>
                   <p className="text-gray-400">
-                    Nền tảng xem và quản lý trang sức 3D với công nghệ tiên tiến nhất
+                    A 3D jewelry viewing and management platform with the most advanced technology.
                   </p>
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold mb-4">Liên kết nhanh</h4>
+                  <h4 className="font-semibold mb-4">Quick links</h4>
                   <ul className="space-y-2 text-gray-400">
-                    <li><a href="/" className="hover:text-white transition">Trang chủ</a></li>
-                    <li><a href="/products" className="hover:text-white transition">Sản phẩm</a></li>
-                    <li><a href="/admin" className="hover:text-white transition">Quản lý</a></li>
+                    <li><a href="/" className="hover:text-white transition">Home</a></li>
+                    <li><a href="/products" className="hover:text-white transition">Products</a></li>
+                    <li><a href="/admin" className="hover:text-white transition">Admin</a></li>
                   </ul>
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold mb-4">Liên hệ</h4>
+                  <h4 className="font-semibold mb-4">Contact</h4>
                   <ul className="space-y-2 text-gray-400">
-                    <li>Email: contact@jewelry3d.com</li>
-                    <li>Hotline: 1900 1234</li>
-                    <li>Địa chỉ: TP. Hồ Chí Minh</li>
+                    <li>Email: phanhuyggg@gmail.com</li>
+                    <li>Hotline: 0987304977</li>
+                    <li>Address: TP. Hồ Chí Minh</li>
                   </ul>
                 </div>
               </div>

@@ -12,22 +12,21 @@ const Home = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-6">
               <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-semibold">Công nghệ 3D Tiên tiến</span>
+              <span className="text-sm font-semibold">Advanced 3D Technology</span>
             </div>
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                Khám Phá Trang Sức
+                Explore Jewelry
               </span>
               <br />
-              <span className="text-gray-800">Với Công Nghệ 3D</span>
+              <span className="text-gray-800">With 3D Technology</span>
             </h1>
 
             {/* Description */}
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Trải nghiệm mua sắm trang sức hoàn toàn mới với khả năng xem 360° 
-              và tùy chỉnh 3D thời gian thực
+              Experience a new way of jewelry shopping with 360° view and real-time 3D customization
             </p>
 
             {/* CTA Buttons */}
@@ -37,7 +36,7 @@ const Home = () => {
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all"
               >
                 <ShoppingBag className="w-5 h-5" />
-                Xem Bộ Sưu Tập
+                View Collection
                 <ArrowRight className="w-5 h-5" />
               </Link>
 
@@ -45,7 +44,7 @@ const Home = () => {
                 to="/admin"
                 className="inline-flex items-center gap-2 bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg border-2 border-purple-600 hover:bg-purple-50 transition"
               >
-                Quản Lý Admin
+                Admin Dashboard
               </Link>
             </div>
           </div>
@@ -56,9 +55,9 @@ const Home = () => {
               <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                 <Eye className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Xem 360°</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">360° View</h3>
               <p className="text-gray-600">
-                Xoay và xem trang sức từ mọi góc độ với công nghệ 3D tương tác
+                Rotate and view jewelry from every angle with interactive 3D technology
               </p>
             </div>
 
@@ -66,9 +65,9 @@ const Home = () => {
               <div className="bg-pink-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                 <Sparkles className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Chất Lượng Cao</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">High Quality</h3>
               <p className="text-gray-600">
-                Mô hình 3D chi tiết với độ phân giải cao, thể hiện chân thực nhất
+                High-resolution 3D models with detailed and realistic representation
               </p>
             </div>
 
@@ -76,9 +75,9 @@ const Home = () => {
               <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                 <ShoppingBag className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Mua Sắm Dễ Dàng</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Easy Shopping</h3>
               <p className="text-gray-600">
-                Trải nghiệm mua sắm trực tuyến mượt mà và tiện lợi
+                Smooth and convenient online shopping experience
               </p>
             </div>
           </div>
@@ -97,25 +96,25 @@ const Home = () => {
               <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 1000+
               </div>
-              <div className="text-gray-600">Sản Phẩm</div>
+              <div className="text-gray-600">Products</div>
             </div>
             <div>
               <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 50K+
               </div>
-              <div className="text-gray-600">Khách Hàng</div>
+              <div className="text-gray-600">Customers</div>
             </div>
             <div>
               <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 4.9/5
               </div>
-              <div className="text-gray-600">Đánh Giá</div>
+              <div className="text-gray-600">Rating</div>
             </div>
             <div>
               <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 24/7
               </div>
-              <div className="text-gray-600">Hỗ Trợ</div>
+              <div className="text-gray-600">Support</div>
             </div>
           </div>
         </div>

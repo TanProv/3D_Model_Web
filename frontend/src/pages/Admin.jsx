@@ -26,8 +26,8 @@ const Admin = () => {
       const response = await modelAPI.getAll({ limit: 100 });
       setModels(response.data.models || []);
     } catch (error) {
-      console.error('Lỗi khi tải danh sách models:', error);
-      alert('Không thể tải danh sách models');
+      console.error('Error loading model list:', error);
+      alert('Unable to load the list of models');
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ const Admin = () => {
     e.preventDefault();
     
     if (!formData.name || !formData.modelFile) {
-      alert('Vui lòng nhập tên và chọn file 3D model');
+      alert('Please enter a name and select a 3D model file to upload.');
       return;
     }
 
@@ -81,7 +81,7 @@ const Admin = () => {
 
       await modelAPI.upload(data);
       
-      alert('Upload thành công!');
+      alert('Upload successful!');
       
       // Reset form
       setFormData({
@@ -95,25 +95,25 @@ const Admin = () => {
       // Refresh list
       fetchModels();
     } catch (error) {
-      console.error('Lỗi khi upload:', error);
-      alert('Upload thất bại: ' + (error.response?.data?.message || error.message));
+      console.error('Error uploading:', error);
+      alert('Upload failed: ' + (error.response?.data?.message || error.message));
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa model này?')) {
+    if (!window.confirm('Are you sure you want to delete this model?')) {
       return;
     }
 
     try {
       await modelAPI.delete(id);
-      alert('Đã xóa thành công!');
+      alert('Deleted successfully!');
       fetchModels();
     } catch (error) {
-      console.error('Lỗi khi xóa:', error);
-      alert('Xóa thất bại: ' + (error.response?.data?.message || error.message));
+      console.error('Error deleting:', error);
+      alert('Delete failed: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -131,10 +131,10 @@ const Admin = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Quản Lý Admin
+            Admin Manager
           </h1>
           <p className="text-gray-600">
-            Upload và quản lý các mô hình 3D
+            Upload and manage 3D models
           </p>
         </div>
 
@@ -154,7 +154,7 @@ const Admin = () => {
                   }`}
                 >
                   <Upload className="w-5 h-5" />
-                  Upload Thủ Công
+                 Manual Upload 
                 </button>
                 <button
                   onClick={() => setActiveTab('ai-generate')}
@@ -174,20 +174,20 @@ const Admin = () => {
                 <>
                   <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                     <Upload className="w-6 h-6 text-purple-600" />
-                    Upload Model Thủ Công
+                    Manual Upload Model
                   </h2>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Tên Model *
+                        Model Name *
                       </label>
                       <input
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        placeholder="Nhập tên model"
+                        placeholder="Enter model name"
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
                         required
                       />
@@ -195,13 +195,13 @@ const Admin = () => {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Mô Tả
+                        Description
                       </label>
                       <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleInputChange}
-                        placeholder="Nhập mô tả (tùy chọn)"
+                        placeholder="Enter description (optional)"
                         rows="3"
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition resize-none"
                       />
@@ -225,7 +225,7 @@ const Admin = () => {
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Thumbnail (tùy chọn)
+                          Thumbnail (optional)
                         </label>
                         <input
                           type="file"
@@ -250,9 +250,9 @@ const Admin = () => {
                             className="w-48 h-48 object-cover rounded-xl shadow-lg"
                           />
                           <div className="text-sm text-gray-500">
-                            <p>• Hình ảnh sẽ được hiển thị trong danh sách</p>
-                            <p>• Kích thước đề xuất: 512x512px</p>
-                            <p>• Định dạng: JPG, PNG, WebP</p>
+                            <p>• The image will be displayed in the list.</p>
+                            <p>• Recommended size: 512x512px</p>
+                            <p>• Format: JPG, PNG, WebP</p>
                           </div>
                         </div>
                       </div>
@@ -266,7 +266,7 @@ const Admin = () => {
                       {uploading ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Đang upload...
+                          Uploading...
                         </>
                       ) : (
                         <>
@@ -288,7 +288,7 @@ const Admin = () => {
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <h2 className="text-2xl font-bold text-gray-800">
-                  Danh Sách Models ({models.length})
+                  Model List ({models.length})
                 </h2>
                 <button
                   onClick={fetchModels}
@@ -296,22 +296,22 @@ const Admin = () => {
                   className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  Làm mới
+                  Refresh
                 </button>
               </div>
 
               {loading ? (
                 <div className="text-center py-12">
                   <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-600">Đang tải dữ liệu...</p>
+                  <p className="text-gray-600">Loading data...</p>
                 </div>
               ) : models.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-4">
                     <Upload className="w-16 h-16 mx-auto opacity-50" />
                   </div>
-                  <p className="text-gray-500 text-lg">Chưa có model nào</p>
-                  <p className="text-gray-400 text-sm mt-2">Hãy upload model đầu tiên của bạn</p>
+                  <p className="text-gray-500 text-lg">No models yet</p>
+                  <p className="text-gray-400 text-sm mt-2">Upload your first model</p>
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-lg border border-gray-200">
@@ -323,13 +323,13 @@ const Admin = () => {
                             Thumbnail
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Tên & Mô tả
+                            Name & Description
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Thông tin
+                            Information
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Thao tác
+                            Actions
                           </th>
                         </tr>
                       </thead>
@@ -354,7 +354,7 @@ const Admin = () => {
                                   {model.name}
                                 </div>
                                 <div className="text-sm text-gray-500 line-clamp-2 mt-1">
-                                  {model.description || 'Không có mô tả'}
+                                  {model.description || 'No description'}
                                 </div>
                               </div>
                             </td>
@@ -380,14 +380,14 @@ const Admin = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                  title="Xem chi tiết"
+                                  title="View details"
                                 >
                                   <Eye className="w-5 h-5" />
                                 </a>
                                 <button
                                   onClick={() => handleDelete(model.modelID)}
                                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  title="Xóa model"
+                                  title="Delete model"
                                 >
                                   <Trash2 className="w-5 h-5" />
                                 </button>
@@ -409,23 +409,23 @@ const Admin = () => {
               {/* Stats Card */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Thống Kê
+                  Statistical
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                    <span className="text-gray-700">Tổng số Models</span>
+                    <span className="text-gray-700">Total Models</span>
                     <span className="font-bold text-purple-600 text-xl">{models.length}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
-                    <span className="text-gray-700">Đang upload</span>
+                    <span className="text-gray-700">Uploading</span>
                     <span className="font-bold text-pink-600">
-                      {uploading ? 'Có' : 'Không'}
+                      {uploading ? 'Yes' : 'No'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <span className="text-gray-700">Đang tải</span>
+                    <span className="text-gray-700">Loading</span>
                     <span className="font-bold text-blue-600">
-                      {loading ? 'Có' : 'Không'}
+                      {loading ? 'Yes' : 'No'}
                     </span>
                   </div>
                 </div>
@@ -435,24 +435,24 @@ const Admin = () => {
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-xl p-6 text-white">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  Mẹo Upload
+                  Upload tips
                 </h3>
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="mt-1">•</span>
-                    <span>Tối ưu hóa model trước khi upload để giảm kích thước file</span>
+                    <span>Optimize model before upload to reduce file size</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1">•</span>
-                    <span>Hỗ trợ các định dạng: GLB, GLTF, FBX, OBJ</span>
+                    <span>Support formats: GLB, GLTF, FBX, OBJ</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1">•</span>
-                    <span>Kích thước file tối đa: 100MB</span>
+                    <span>Maximum file size: 100MB</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1">•</span>
-                    <span>Thêm thumbnail để dễ dàng nhận diện model</span>
+                    <span>Add thumbnail for easier model identification</span>
                   </li>
                 </ul>
               </div>
@@ -460,7 +460,7 @@ const Admin = () => {
               {/* Quick Actions */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Thao Tác Nhanh
+                  Quick Actions
                 </h3>
                 <div className="space-y-3">
                   <button
@@ -471,7 +471,7 @@ const Admin = () => {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                   >
                     <Upload className="w-4 h-4" />
-                    Upload Mới
+                    Upload new
                   </button>
                   <button
                     onClick={fetchModels}
@@ -479,7 +479,7 @@ const Admin = () => {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Làm Mới Danh Sách
+                    Refresh List
                   </button>
                 </div>
               </div>

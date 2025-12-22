@@ -31,9 +31,9 @@ const Products = () => {
   const addToCart = (item) => {
     if (!cart.find(i => i.modelID === item.modelID)) {
       setCart([...cart, item]);
-      alert('Đã thêm vào giỏ hàng!');
+      alert('Added to cart!');
     } else {
-      alert('Sản phẩm đã có trong giỏ hàng!');
+      alert('Product is already in the cart!');
     }
   };
 
@@ -59,7 +59,7 @@ const Products = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Đang tải sản phẩm...</p>
+          <p className="text-gray-600 text-lg">Loading products...</p>
         </div>
       </div>
     );
@@ -71,10 +71,10 @@ const Products = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Bộ Sưu Tập Trang Sức 3D
+           3D Jewelry Collection
           </h1>
           <p className="text-gray-600">
-            Khám phá {filteredModels.length} sản phẩm tuyệt đẹp
+            Explore {filteredModels.length} beautiful products
           </p>
         </div>
 
@@ -86,7 +86,7 @@ const Products = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
@@ -101,7 +101,7 @@ const Products = () => {
                 onChange={(e) => setFilterFormat(e.target.value)}
                 className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
               >
-                <option value="all">Tất cả định dạng</option>
+                <option value="all">All formats</option>
                 <option value="glb">GLB</option>
                 <option value="gltf">GLTF</option>
                 <option value="fbx">FBX</option>
@@ -137,7 +137,7 @@ const Products = () => {
         {/* Products Grid */}
         {filteredModels.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">Không tìm thấy sản phẩm nào</p>
+            <p className="text-gray-500 text-lg">No products found</p>
           </div>
         ) : (
           <div className={`grid ${

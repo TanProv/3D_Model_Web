@@ -29,13 +29,13 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleTextGenerate = async () => {
     if (!textPrompt.trim()) {
-      setStatus({ type: 'error', message: 'Vui lòng nhập mô tả!' });
+      setStatus({ type: 'error', message: 'Please enter a description!' });
       return;
     }
 
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Đang tạo mô hình 3D từ văn bản... (có thể mất 2-5 phút)' });
+      setStatus({ type: 'info', message: 'Generating 3D model from text... (may take 2-5 minutes)' });
 
       const response = await tripoAPI.generateFromText({
         prompt: textPrompt,
@@ -45,7 +45,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
       setStatus({ 
         type: 'success', 
-        message: 'Đã bắt đầu tạo mô hình! Mô hình sẽ xuất hiện trong danh sách sau vài phút.' 
+        message: 'Generation started! The model will appear in the list in a few minutes.' 
       });
 
       // Reset form
@@ -59,7 +59,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Lỗi khi tạo mô hình!' 
+        message: error.response?.data?.message || 'Error generating model!' 
       });
     } finally {
       setGenerating(false);
@@ -68,13 +68,13 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleImageUrlGenerate = async () => {
     if (!imageUrl.trim()) {
-      setStatus({ type: 'error', message: 'Vui lòng nhập URL hình ảnh!' });
+      setStatus({ type: 'error', message: 'Please enter an image URL!' });
       return;
     }
 
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Đang tạo mô hình 3D từ hình ảnh... (có thể mất 2-5 phút)' });
+      setStatus({ type: 'info', message: 'Generating 3D model from image... (may take 2-5 minutes)' });
 
       const response = await tripoAPI.generateFromImageUrl({
         imageUrl: imageUrl,
@@ -84,7 +84,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
       setStatus({ 
         type: 'success', 
-        message: 'Đã bắt đầu tạo mô hình! Mô hình sẽ xuất hiện trong danh sách sau vài phút.' 
+        message: 'Generation started! The model will appear in the list in a few minutes.' 
       });
 
       setTimeout(() => {
@@ -97,7 +97,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Lỗi khi tạo mô hình!' 
+        message: error.response?.data?.message || 'Error generating model!' 
       });
     } finally {
       setGenerating(false);
@@ -106,13 +106,13 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleImageFileGenerate = async () => {
     if (!imageFile) {
-      setStatus({ type: 'error', message: 'Vui lòng chọn file hình ảnh!' });
+      setStatus({ type: 'error', message: 'Please select an image file!' });
       return;
     }
 
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Đang tải lên và tạo mô hình 3D... (có thể mất 2-5 phút)' });
+      setStatus({ type: 'info', message: 'Uploading and generating 3D model... (may take 2-5 minutes)' });
 
       const formData = new FormData();
       formData.append('image', imageFile);
@@ -123,7 +123,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
       setStatus({ 
         type: 'success', 
-        message: 'Đã bắt đầu tạo mô hình! Mô hình sẽ xuất hiện trong danh sách sau vài phút.' 
+        message: 'Generation started! The model will appear in the list in a few minutes.' 
       });
 
       setTimeout(() => {
@@ -137,7 +137,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Lỗi khi tạo mô hình!' 
+        message: error.response?.data?.message || 'Error generating model!' 
       });
     } finally {
       setGenerating(false);
@@ -167,10 +167,10 @@ const AIGenerator = ({ onGenerationComplete }) => {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            AI Generator - Tạo mô hình 3D
+            AI Generator - Create 3D models
           </h2>
           <p className="text-sm text-gray-600">
-            Powered by Tripo AI
+            Powered by UwU
           </p>
         </div>
       </div>
@@ -185,7 +185,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          📝 Văn bản
+          📝 Document
         </button>
         <button
           onClick={() => setActiveTab('image-url')}
@@ -195,7 +195,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          🔗 URL Hình ảnh
+          🔗 Image URL
         </button>
         <button
           onClick={() => setActiveTab('image-file')}
@@ -205,7 +205,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          📸 Upload Hình ảnh
+          📸 Upload Image
         </button>
       </div>
 
@@ -229,7 +229,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
           <>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mô tả mô hình *
+                Model Description *
               </label>
               <textarea
                 value={textPrompt}
@@ -240,7 +240,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
                 disabled={generating}
               />
               <p className="text-xs text-gray-500 mt-1">
-                💡 Mô tả chi tiết bằng tiếng Anh để có kết quả tốt nhất
+                💡 Provide a detailed description in English for best results.
               </p>
             </div>
           </>
@@ -250,7 +250,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
           <>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                URL Hình ảnh *
+                Image URL *
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -264,7 +264,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                💡 Hình ảnh rõ nét, góc nhìn tốt sẽ cho kết quả chính xác hơn
+                💡 Clear images with good angles will produce more accurate results
               </p>
             </div>
           </>
@@ -274,7 +274,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
           <>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Upload Hình ảnh *
+                Upload Image *
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-500 transition cursor-pointer">
                 <input
@@ -301,7 +301,7 @@ const AIGenerator = ({ onGenerationComplete }) => {
                     <div>
                       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                       <p className="text-gray-600 font-medium mb-1">
-                        Click để chọn hình ảnh
+                        Click to select image
                       </p>
                       <p className="text-xs text-gray-500">
                         PNG, JPG, WEBP (Max 10MB)
@@ -318,26 +318,26 @@ const AIGenerator = ({ onGenerationComplete }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Tên mô hình (tùy chọn)
+              Model Name (optional)
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tên cho mô hình của bạn"
+              placeholder="Name for your model"
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
               disabled={generating}
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Mô tả (tùy chọn)
+              Model Description (optional)
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả ngắn gọn"
+              placeholder="A brief description of your model"
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
               disabled={generating}
             />
@@ -353,12 +353,12 @@ const AIGenerator = ({ onGenerationComplete }) => {
           {generating ? (
             <>
               <Loader className="w-5 h-5 animate-spin" />
-              Đang tạo mô hình...
+              Generating model...
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              Tạo mô hình 3D
+              Create 3D Model
             </>
           )}
         </button>
@@ -366,9 +366,9 @@ const AIGenerator = ({ onGenerationComplete }) => {
         {/* Info */}
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4">
           <p className="text-sm text-gray-700">
-            <strong>⏱️ Thời gian:</strong> Khoảng 2-5 phút để hoàn thành<br/>
-            <strong>📦 Định dạng:</strong> GLB (tương thích với mọi trình duyệt)<br/>
-            <strong>✨ Powered by:</strong> Tripo AI - State-of-the-art 3D generation
+            <strong>⏱️ Time:</strong> Approximately 2-5 minutes to complete<br/>
+            <strong>📦 Format:</strong> GLB (compatible with all browsers)<br/>
+            <strong>✨ Powered by:</strong> UwU - State-of-the-art 3D generation
           </p>
         </div>
       </div>
