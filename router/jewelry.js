@@ -1,24 +1,25 @@
 import express from "express";
-import Jewelry from "../models/Jewelry.js";
+import { Op } from "sequelize"; 
 import Model3D from "../models/Model3D.js";
 
 const router = express.Router();
 
-// CREATE Jewelry
+// CREATE Model
 router.post("/", async (req, res) => {
   try {
-    const jewelry = await Jewelry.create(req.body);
-    res.status(201).json(jewelry);
+    // req.body cần chứa: name, modelPath, format, price, ...
+    const model = await Model3D.create(req.body);
+    res.status(201).json(model);
   } catch (error) {
-    console.error("Create jewelry error:", error);
+    console.error("Create model error:", error);
     res.status(500).json({
-      message: "Failed to create jewelry",
+      message: "Failed to create model",
       error: error.message,
     });
   }
 });
 
-// GET all Jewelry with pagination and search
+// GET all Models with pagination and search
 router.get("/", async (req, res) => {
   try {
     const { page = 1, limit = 12, search = "" } = req.query;
@@ -30,15 +31,15 @@ router.get("/", async (req, res) => {
       }
     } : {};
 
-    const { count, rows } = await Jewelry.findAndCountAll({
+    const { count, rows } = await Model3D.findAndCountAll({
       where: whereClause,
       limit: parseInt(limit),
       offset: offset,
-      order: [['createdAt', 'DESC']]
+      order: [['uploadDate', 'DESC']] 
     });
 
     res.json({
-      jewelry: rows,
+      data: rows,
       totalItems: count,
       totalPages: Math.ceil(count / parseInt(limit)),
       currentPage: parseInt(page)
@@ -48,42 +49,43 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET single Jewelry by ID
+// GET single Model by ID
 router.get("/:id", async (req, res) => {
   try {
-    const jewelry = await Jewelry.findByPk(req.params.id);
-    if (!jewelry) {
-      return res.status(404).json({ message: "Jewelry not found" });
+    // Model3D sử dụng modelID làm khóa chính
+    const model = await Model3D.findByPk(req.params.id);
+    if (!model) {
+      return res.status(404).json({ message: "Model not found" });
     }
-    res.json(jewelry);
+    res.json(model);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// UPDATE Jewelry
+// UPDATE Model
 router.put("/:id", async (req, res) => {
   try {
-    const jewelry = await Jewelry.findByPk(req.params.id);
-    if (!jewelry) {
-      return res.status(404).json({ message: "Jewelry not found" });
+    const model = await Model3D.findByPk(req.params.id);
+    if (!model) {
+      return res.status(404).json({ message: "Model not found" });
     }
-    await jewelry.update(req.body);
-    res.json(jewelry);
+    await model.update(req.body);
+    res.json(model);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// DELETE Jewelry
+// DELETE Model
 router.delete("/:id", async (req, res) => {
   try {
-    const jewelry = await Jewelry.findByPk(req.params.id);
-    if (!jewelry) {
-      return res.status(404).json({ message: "Jewelry not found" });
+    const model = await Model3D.findByPk(req.params.id);
+    if (!model) {
+      return res.status(404).json({ message: "Model not found" });
     }
-    await jewelry.destroy();
-    res.json({ message: "Jewelry deleted successfully" });
+    await model.destroy();
+    res.json({ message: "Model deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
