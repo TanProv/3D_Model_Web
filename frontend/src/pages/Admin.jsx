@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, Eye, RefreshCw, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Upload, Trash2, Eye, RefreshCw, Sparkles, 
+  Plus, Search, Package, Layers, Activity, X,
+  Image as ImageIcon, Camera, ScanFace, ImagePlus 
+} from 'lucide-react';
 import { modelAPI, getAssetUrl } from '../services/api.js';
 import AIGenerator from '../components/AIGenerator.jsx';
 
@@ -7,14 +11,23 @@ const Admin = () => {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('inventory'); 
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Ref cho input file ẩn 
+  const quickUpdateInputRef = useRef(null);
+  const [updatingModelId, setUpdatingModelId] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     modelFile: null,
-    thumbnailFile: null
+    thumbnailFile: null,
+    tryOnImgFile: null
   });
-  const [previewImage, setPreviewImage] = useState(null);
+
+  const [previewThumbnail, setPreviewThumbnail] = useState(null);
+  const [previewTryOn, setPreviewTryOn] = useState(null);
 
   useEffect(() => {
     fetchModels();
@@ -27,44 +40,36 @@ const Admin = () => {
       setModels(response.data.models || []);
     } catch (error) {
       console.error('Error loading model list:', error);
-      alert('Unable to load the list of models');
     } finally {
       setLoading(false);
     }
   };
 
+  // --- LOGIC FORM NHẬP LIỆU (GIỮ NGUYÊN) ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (files && files[0]) {
       const file = files[0];
-      setFormData(prev => ({
-        ...prev,
-        [name]: file
-      }));
+      setFormData(prev => ({ ...prev, [name]: file }));
 
-      if (name === 'thumbnailFile') {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImage(reader.result);
-        };
-        reader.readAsDataURL(file);
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (name === 'thumbnailFile') setPreviewThumbnail(reader.result);
+        else if (name === 'tryOnImgFile') setPreviewTryOn(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!formData.name || !formData.modelFile) {
-      alert('Please enter a name and select a 3D model file to upload.');
+      alert('Please enter a name and select a 3D model file.');
       return;
     }
 
@@ -74,28 +79,18 @@ const Admin = () => {
       data.append('name', formData.name);
       data.append('description', formData.description || '');
       data.append('model', formData.modelFile);
-      
-      if (formData.thumbnailFile) {
-        data.append('thumbnail', formData.thumbnailFile);
-      }
+      if (formData.thumbnailFile) data.append('thumbnail', formData.thumbnailFile);
+      if (formData.tryOnImgFile) data.append('tryOnImg', formData.tryOnImgFile);
 
       await modelAPI.upload(data);
+      alert('Masterpiece acquired successfully!');
       
-      alert('Upload successful!');
-      
-      // Reset form
-      setFormData({
-        name: '',
-        description: '',
-        modelFile: null,
-        thumbnailFile: null
-      });
-      setPreviewImage(null);
-      
-      // Refresh list
+      setFormData({ name: '', description: '', modelFile: null, thumbnailFile: null, tryOnImgFile: null });
+      setPreviewThumbnail(null);
+      setPreviewTryOn(null);
+      setActiveTab('inventory');
       fetchModels();
     } catch (error) {
-      console.error('Error uploading:', error);
       alert('Upload failed: ' + (error.response?.data?.message || error.message));
     } finally {
       setUploading(false);
@@ -103,17 +98,42 @@ const Admin = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this model?')) {
-      return;
-    }
-
+    if (!window.confirm('Are you sure you want to decommission this asset?')) return;
     try {
       await modelAPI.delete(id);
-      alert('Deleted successfully!');
       fetchModels();
     } catch (error) {
-      console.error('Error deleting:', error);
-      alert('Delete failed: ' + (error.response?.data?.message || error.message));
+      alert('Delete failed');
+    }
+  };
+
+  // --- LOGIC MỚI: UPDATE THUMBNAIL NHANH ---
+  const triggerQuickUpdate = (modelID) => {
+    setUpdatingModelId(modelID);
+    if (quickUpdateInputRef.current) {
+      quickUpdateInputRef.current.click();
+    }
+  };
+
+  const handleQuickUpdateFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !updatingModelId) return;
+
+    try {
+      // Hiển thị trạng thái loading tạm thời
+      const data = new FormData();
+      data.append('thumbnail', file); // Backend đã hỗ trợ update thumbnail riêng lẻ qua API update
+
+      await modelAPI.update(updatingModelId, data);
+      
+      alert('Lifestyle Thumbnail updated!');
+      fetchModels(); // Refresh lại danh sách để hiện ảnh mới
+    } catch (error) {
+      console.error('Quick update failed:', error);
+      alert('Failed to update thumbnail.');
+    } finally {
+      setUpdatingModelId(null);
+      e.target.value = ''; // Reset input file
     }
   };
 
@@ -125,366 +145,251 @@ const Admin = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const filteredModels = models.filter(model => 
+    model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (model.description && model.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Admin Manager
-          </h1>
-          <p className="text-gray-600">
-            Upload and manage 3D models
-          </p>
+    <div className="max-w-7xl mx-auto px-6 py-12 min-h-screen bg-white text-gray-900">
+      
+      {/* Input File Ẩn Dùng Cho Update Nhanh */}
+      <input 
+        type="file" 
+        ref={quickUpdateInputRef} 
+        className="hidden" 
+        accept="image/*"
+        onChange={handleQuickUpdateFile}
+      />
+
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
+        <div className="space-y-4">
+          <h1 className="text-6xl font-serif">Atelier <br /><span className="italic font-light text-amber-600">Manager</span></h1>
+          <p className="text-gray-500">Manage digital assets and curation.</p>
+        </div>
+        <div className="flex gap-4">
+          <div className="bg-amber-50 px-6 py-4 rounded-3xl border border-amber-100 flex items-center gap-4">
+            <Activity className="text-amber-600" size={24} />
+            <div>
+              <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">System Status</p>
+              <p className="text-lg font-bold">Online</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        
+        {/* Left Column: Navigation */}
+        <div className="lg:col-span-1 space-y-8">
+          {/* Menu Cards */}
+          <div onClick={() => setActiveTab('inventory')} className={`cursor-pointer rounded-3xl p-8 border transition-all duration-300 group ${activeTab === 'inventory' ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-gray-50 border-gray-100 hover:border-amber-200'}`}>
+            <div className="flex justify-between items-start mb-4">
+              <Package className={`${activeTab === 'inventory' ? 'text-amber-500' : 'text-gray-400'}`} size={32} />
+              <div className={`p-2 rounded-full ${activeTab === 'inventory' ? 'bg-white/10' : 'bg-white shadow-sm'}`}>
+                <Search size={20} className={activeTab === 'inventory' ? 'text-white' : 'text-gray-900'} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xl font-serif font-bold">Gallery Inventory</h4>
+              <p className={`text-xs mt-2 ${activeTab === 'inventory' ? 'text-gray-400' : 'text-gray-500'}`}>{models.length} Masterpieces Active</p>
+            </div>
+          </div>
+
+          <div onClick={() => setActiveTab('upload')} className={`cursor-pointer rounded-3xl p-8 border transition-all duration-300 group ${activeTab === 'upload' ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-gray-50 border-gray-100 hover:border-amber-200'}`}>
+            <div className="flex justify-between items-start mb-4">
+              <Layers className={`${activeTab === 'upload' ? 'text-amber-500' : 'text-gray-400'}`} size={32} />
+              <div className={`p-2 rounded-full ${activeTab === 'upload' ? 'bg-white/10' : 'bg-white shadow-sm'}`}>
+                <Plus size={20} className={activeTab === 'upload' ? 'text-white' : 'text-gray-900'} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xl font-serif font-bold">Mint New Asset</h4>
+              <p className={`text-xs mt-2 ${activeTab === 'upload' ? 'text-gray-400' : 'text-gray-500'}`}>Import GLB & Imagery</p>
+            </div>
+          </div>
+
+          <div onClick={() => setActiveTab('ai-generate')} className={`cursor-pointer rounded-3xl p-8 border transition-all duration-300 group ${activeTab === 'ai-generate' ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-white border-amber-100 hover:border-amber-300 shadow-lg'}`}>
+            <div className="flex justify-between items-start mb-4">
+              <Sparkles className="text-amber-600" size={32} />
+            </div>
+            <div>
+              <h4 className="text-xl font-serif font-bold">AI Studio</h4>
+              <p className={`text-xs mt-2 ${activeTab === 'ai-generate' ? 'text-gray-400' : 'text-gray-500'}`}>Generate Concepts via Gemini</p>
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Upload Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-              {/* Tabs */}
-              <div className="flex gap-4 mb-6 border-b border-gray-200">
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className={`pb-3 px-4 font-semibold transition-colors flex items-center gap-2 ${
-                    activeTab === 'upload'
-                      ? 'text-purple-600 border-b-2 border-purple-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Upload className="w-5 h-5" />
-                 Manual Upload 
-                </button>
-                <button
-                  onClick={() => setActiveTab('ai-generate')}
-                  className={`pb-3 px-4 font-semibold transition-colors flex items-center gap-2 ${
-                    activeTab === 'ai-generate'
-                      ? 'text-purple-600 border-b-2 border-purple-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Sparkles className="w-5 h-5" />
-                  AI Generator
-                </button>
+        {/* Right Column: Content Area */}
+        <div className="lg:col-span-2">
+          
+          {/* VIEW: INVENTORY */}
+          {activeTab === 'inventory' && (
+            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h4 className="font-bold text-xs uppercase tracking-widest text-gray-900">Collection Registry</h4>
+                <div className="relative w-full sm:w-64">
+                   <input 
+                    type="text" 
+                    placeholder="Search ID or Name..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-full px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 pl-10"
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                </div>
               </div>
 
-              {/* Tab Content */}
-              {activeTab === 'upload' ? (
-                <>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                    <Upload className="w-6 h-6 text-purple-600" />
-                    Manual Upload Model
-                  </h2>
+              <div className="divide-y divide-gray-100 max-h-[800px] overflow-y-auto">
+                {loading ? (
+                   <div className="p-12 text-center text-gray-400 italic">Accessing Archives...</div>
+                ) : filteredModels.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <p className="text-gray-400 mb-4">No artifacts found.</p>
+                    <button onClick={() => setActiveTab('upload')} className="text-amber-600 text-xs font-bold uppercase tracking-widest hover:underline">Mint First Piece</button>
+                  </div>
+                ) : (
+                  filteredModels.map(model => (
+                    <div key={model.modelID} className="px-8 py-5 flex flex-col sm:flex-row items-center justify-between hover:bg-gray-50 transition-colors group">
+                      <div className="flex items-center gap-6 w-full sm:w-auto">
+                        
+                        {/* THUMBNAIL VỚI CHỨC NĂNG UPDATE */}
+                        <div 
+                          className="relative w-16 h-16 group/thumb cursor-pointer"
+                          onClick={() => triggerQuickUpdate(model.modelID)}
+                          title="Click to update Thumbnail"
+                        >
+                          <div className="w-full h-full bg-gray-100 rounded-2xl overflow-hidden border border-gray-200">
+                             <img 
+                              src={model.thumbnailPath ? getAssetUrl(model.thumbnailPath) : 'https://via.placeholder.com/150?text=No+Img'} 
+                              className="w-full h-full object-cover" 
+                              alt={model.name}
+                              onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Error'; }}
+                            />
+                          </div>
+                          {/* Overlay khi Hover */}
+                          <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity backdrop-blur-[1px]">
+                            <ImagePlus className="text-white w-6 h-6" strokeWidth={1.5} />
+                          </div>
+                        </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Model Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Enter model name"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        placeholder="Enter description (optional)"
-                        rows="3"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition resize-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          File 3D Model (.glb, .gltf, .fbx) *
-                        </label>
-                        <input
-                          type="file"
-                          id="modelFile"
-                          name="modelFile"
-                          accept=".glb,.gltf,.fbx,.obj"
-                          onChange={handleFileChange}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Thumbnail (optional)
-                        </label>
-                        <input
-                          type="file"
-                          id="thumbnailFile"
-                          name="thumbnailFile"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                        />
-                      </div>
-                    </div>
-
-                    {previewImage && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Preview Thumbnail
-                        </label>
-                        <div className="flex gap-4">
-                          <img 
-                            src={previewImage} 
-                            alt="Preview" 
-                            className="w-48 h-48 object-cover rounded-xl shadow-lg"
-                          />
-                          <div className="text-sm text-gray-500">
-                            <p>• The image will be displayed in the list.</p>
-                            <p>• Recommended size: 512x512px</p>
-                            <p>• Format: JPG, PNG, WebP</p>
+                        <div>
+                          <p className="text-base font-serif font-bold text-gray-900">{model.name}</p>
+                          <p className="text-[10px] text-gray-400 font-mono mt-1">ID: {model.modelID} • {formatFileSize(model.fileSize)}</p>
+                          <div className="flex gap-2 mt-2">
+                            <span className="inline-block bg-amber-50 text-amber-700 px-2 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider border border-amber-100">
+                              {model.format || 'GLB'}
+                            </span>
+                            {model.tryOnImgPath && (
+                               <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider border border-blue-100">
+                                VTO Ready
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={uploading}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-                    >
-                      {uploading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-5 h-5" />
-                          Upload Model
-                        </>
-                      )}
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <div className="py-4">
-                  <AIGenerator onSuccess={fetchModels} />
-                </div>
-              )}
+                      
+                      <div className="flex items-center gap-4 mt-4 sm:mt-0 w-full sm:w-auto justify-end">
+                         <a 
+                          href={`/product/${model.modelID}`} 
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all"
+                          title="View Product Page"
+                        >
+                          <Eye size={18} />
+                        </a>
+                        <button 
+                          onClick={() => handleDelete(model.modelID)}
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                          title="Decommission Asset"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
+          )}
 
-            {/* Models List */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Model List ({models.length})
-                </h2>
-                <button
-                  onClick={fetchModels}
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
-              </div>
-
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading data...</p>
-                </div>
-              ) : models.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-gray-400 mb-4">
-                    <Upload className="w-16 h-16 mx-auto opacity-50" />
+          {/* VIEW: UPLOAD */}
+          {activeTab === 'upload' && (
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+               {}
+               <div className="mb-8 flex justify-between items-start">
+                  <div>
+                    <h3 className="text-2xl font-serif font-bold">New Acquisition</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed mt-2">Enter details to catalog a new digital heritage piece.</p>
                   </div>
-                  <p className="text-gray-500 text-lg">No models yet</p>
-                  <p className="text-gray-400 text-sm mt-2">Upload your first model</p>
-                </div>
-              ) : (
-                <div className="overflow-hidden rounded-lg border border-gray-200">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Thumbnail
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Name & Description
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Information
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {models.map((model) => (
-                          <tr key={model.modelID} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                                <img 
-                                  src={model.thumbnailPath ? getAssetUrl(model.thumbnailPath) : 'https://via.placeholder.com/80?text=No+Image'}
-                                  alt={model.name}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/80?text=No+Image';
-                                  }}
-                                />
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="max-w-xs">
-                                <div className="font-semibold text-gray-800 truncate">
-                                  {model.name}
-                                </div>
-                                <div className="text-sm text-gray-500 line-clamp-2 mt-1">
-                                  {model.description || 'No description'}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded">
-                                    {model.format?.toUpperCase() || 'N/A'}
-                                  </span>
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {formatFileSize(model.fileSize)}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                  {new Date(model.uploadDate).toLocaleDateString('vi-VN')}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-2">
-                                <a
-                                  href={`/product/${model.modelID}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                  title="View details"
-                                >
-                                  <Eye className="w-5 h-5" />
-                                </a>
-                                <button
-                                  onClick={() => handleDelete(model.modelID)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  title="Delete model"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column - Stats & Info */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
-              {/* Stats Card */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Statistical
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                    <span className="text-gray-700">Total Models</span>
-                    <span className="font-bold text-purple-600 text-xl">{models.length}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
-                    <span className="text-gray-700">Uploading</span>
-                    <span className="font-bold text-pink-600">
-                      {uploading ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <span className="text-gray-700">Loading</span>
-                    <span className="font-bold text-blue-600">
-                      {loading ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tips Card */}
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-xl p-6 text-white">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  Upload tips
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    <span>Optimize model before upload to reduce file size</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    <span>Support formats: GLB, GLTF, FBX, OBJ</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    <span>Maximum file size: 100MB</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1">•</span>
-                    <span>Add thumbnail for easier model identification</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-2xl shadow-xl p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Quick Actions
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      setActiveTab('upload');
-                      document.querySelector('input[name="name"]')?.focus();
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Upload new
+                  <button onClick={() => setActiveTab('inventory')} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+                    <X size={20} />
                   </button>
-                  <button
-                    onClick={fetchModels}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh List
+               </div>
+
+               <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* ... Code Form Upload ... */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Artifact Name</label>
+                      <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g. The Royal Sapphire Ring" className="w-full bg-gray-50 border border-gray-200 px-6 py-4 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Heritage Description</label>
+                       <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Philosophy and details..." className="w-full bg-gray-50 border border-gray-200 px-6 py-4 rounded-2xl text-sm h-32 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div className="space-y-2">
+                          <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400 flex items-center gap-2"><Package size={12}/> 3D Asset (.glb/.gltf) *</label>
+                          <div className="relative group">
+                            <input type="file" name="modelFile" accept=".glb,.gltf,.fbx,.obj" onChange={handleFileChange} className="w-full bg-gray-50 border border-gray-200 px-6 py-4 rounded-2xl text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 cursor-pointer" />
+                          </div>
+                       </div>
+                       <div className="space-y-4 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                              <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400 flex items-center gap-2"><ImageIcon size={12}/> Lifestyle Thumbnail</label>
+                              <div className={`relative border-2 border-dashed rounded-2xl p-4 transition-all ${previewThumbnail ? 'border-amber-300 bg-amber-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}>
+                                <input type="file" name="thumbnailFile" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                {previewThumbnail ? <div className="relative h-40 w-full flex items-center justify-center overflow-hidden rounded-xl"><img src={previewThumbnail} alt="Preview" className="h-full object-contain" /></div> : <div className="h-40 flex flex-col items-center justify-center text-gray-400"><ImageIcon size={32} className="mb-2" /><span className="text-[10px] font-bold uppercase tracking-widest">Drop Image</span></div>}
+                              </div>
+                          </div>
+                          <div className="space-y-2">
+                              <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400 flex items-center gap-2"><ScanFace size={12}/> Virtual Try-On Image (PNG)</label>
+                              <div className={`relative border-2 border-dashed rounded-2xl p-4 transition-all ${previewTryOn ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}>
+                                <input type="file" name="tryOnImgFile" accept="image/png" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                {previewTryOn ? <div className="relative h-40 w-full flex items-center justify-center overflow-hidden rounded-xl bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"><img src={previewTryOn} alt="Preview" className="h-full object-contain" /></div> : <div className="h-40 flex flex-col items-center justify-center text-gray-400"><Camera size={32} className="mb-2" /><span className="text-[10px] font-bold uppercase tracking-widest">Drop PNG</span></div>}
+                              </div>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                  <button type="submit" disabled={uploading} className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white py-5 rounded-full font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 shadow-lg mt-8">
+                    {uploading ? <><RefreshCw className="animate-spin" size={16} /> Minting...</> : <><Upload size={16} /> Commence Minting</>}
                   </button>
-                </div>
-              </div>
+               </form>
             </div>
-          </div>
+          )}
+
+          {/* VIEW: AI GENERATOR */}
+          {activeTab === 'ai-generate' && (
+             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-6">
+                 <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-amber-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                      <Sparkles size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-serif font-bold">Concept Generator</h3>
+                      <p className="text-xs text-gray-500 uppercase tracking-widest">Powered by UwU</p>
+                    </div>
+                 </div>
+                 <AIGenerator onGenerationComplete={fetchModels} />
+               </div>
+             </div>
+          )}
+
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, ShoppingCart, Eye } from 'lucide-react';
+import { Heart, ShoppingBag, Eye, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAssetUrl } from '../services/api.js';
 
@@ -13,23 +13,25 @@ const ProductCard = ({
   const [imageError, setImageError] = useState(false);
   
   const thumbnailUrl = getAssetUrl(model.thumbnailPath);
-  const modelUrl = getAssetUrl(model.modelPath);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-      {/* Image/3D Preview */}
-      <div className="relative h-64 bg-gradient-to-br from-purple-100 to-pink-100">
-        {/* Loading Skeleton */}
+    <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-amber-200 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
+      {/* Image Container */}
+      <div className="relative aspect-square bg-gray-50 overflow-hidden">
+        
+        {/* Loading / Placeholder */}
         {!imageLoaded && !imageError && (
-          <div className="absolute inset-0 animate-pulse bg-gray-200" />
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin"></div>
+          </div>
         )}
         
         {thumbnailUrl && !imageError ? (
           <img 
             src={thumbnailUrl} 
             alt={model.name}
-            loading="lazy" // Lazy loading
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
+            loading="lazy"
+            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -39,77 +41,80 @@ const ProductCard = ({
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center">
-              <Eye className="w-16 h-16 text-purple-400 mx-auto mb-2" />
-              <p className="text-gray-500">View in 3D</p>
+          <div className="w-full h-full flex items-center justify-center bg-gray-50">
+            <div className="text-center p-6">
+              <Box className="w-12 h-12 text-gray-300 mx-auto mb-3" strokeWidth={1} />
+              <p className="text-[10px] uppercase tracking-widest text-gray-400">Preview Unavailable</p>
             </div>
           </div>
         )}
         
-        {/* Favorite Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            onToggleFavorite(model.modelID);
-          }}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition"
-        >
-          <Heart 
-            className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-          />
-        </button>
-
-        {/* Format Badge */}
-        <div className="absolute top-3 left-3 px-3 py-1 bg-purple-600 text-white text-xs font-semibold rounded-full">
-          {model.format.toUpperCase()}
+        {/* Overlay Badges */}
+        <div className="absolute top-4 left-4">
+           <span className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest text-gray-900 border border-gray-100">
+             {model.format?.toUpperCase() || 'GLB'}
+           </span>
         </div>
 
-        {/* File Size Badge */}
-        <div className="absolute bottom-3 right-3 px-3 py-1 bg-black/60 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
-          {(model.fileSize / 1024 / 1024).toFixed(1)} MB
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
-          {model.name}
-        </h3>
-        
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-          {model.description || 'No description'}
-        </p>
-
-        {/* Meta Info */}
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-          <span>
-            ID: #{model.modelID}
-          </span>
-          <span>
-            {new Date(model.uploadDate).toLocaleDateString('vi-VN')}
-          </span>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <Link
-            to={`/product/${model.modelID}`}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2"
+        {/* Action Buttons (Reveal on Hover) */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleFavorite(model.modelID);
+            }}
+            className="p-3 bg-white text-gray-400 hover:text-red-500 rounded-full shadow-lg hover:shadow-xl transition-all"
           >
-            <Eye className="w-4 h-4" />
-            View in 3D
-          </Link>
-          
+            <Heart 
+              className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`}
+            />
+          </button>
           <button
             onClick={(e) => {
               e.preventDefault();
               onAddToCart(model);
             }}
-            className="p-2 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition"
+            className="p-3 bg-white text-gray-400 hover:text-amber-600 rounded-full shadow-lg hover:shadow-xl transition-all"
           >
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingBag className="w-4 h-4" />
           </button>
+        </div>
+
+        {/* Quick View Overlay */}
+        <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center pb-6 bg-gradient-to-t from-black/20 to-transparent">
+           <Link 
+             to={`/product/${model.modelID}`}
+             className="bg-white text-gray-900 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors shadow-lg flex items-center gap-2"
+           >
+             <Eye size={14} /> Quick View
+           </Link>
+        </div>
+      </div>
+
+      {/* Info Section */}
+      <div className="p-6 space-y-3">
+        <div className="space-y-1">
+          <h3 className="font-serif text-xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-1">
+            {model.name}
+          </h3>
+          <p className="text-[10px] uppercase tracking-widest text-gray-400">
+             ID: {model.modelID} • {(model.fileSize / 1024 / 1024).toFixed(1)} MB
+          </p>
+        </div>
+        
+        {model.description && (
+          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed font-light">
+            {model.description}
+          </p>
+        )}
+
+        <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
+           <span className="text-xs font-bold text-gray-900">
+              In Stock
+           </span>
+           <span className="text-[10px] text-gray-400 font-mono">
+              {new Date(model.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+           </span>
         </div>
       </div>
     </div>

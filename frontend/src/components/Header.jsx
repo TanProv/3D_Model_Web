@@ -1,10 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Heart, User, Search, LogOut, Menu, X, Sparkles } from 'lucide-react';
 import { AuthContext } from '../App.jsx';
 
 function Header({ cartCount, favoritesCount }) {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -12,85 +14,113 @@ function Header({ cartCount, favoritesCount }) {
   };
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">J3D</span>
-              </div>
-              <span className="text-xl font-bold text-gray-800">Jewelry 3D Gallery</span>
-            </Link>
+    <header className="bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+        
+        {/* Left: Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-12">
+          <Link to="/" className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            Atelier
+          </Link>
+          <Link to="/products" className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            Collections
+          </Link>
+          <Link to="/about" className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            Philosophy
+          </Link>
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <button 
+          className="md:hidden p-2 text-gray-600 hover:text-black"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        {/* Center: Logo */}
+        <Link to="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 group">
+          <div className="flex flex-col items-center">
+            <h1 className="font-serif text-2xl md:text-3xl tracking-tight text-gray-900 group-hover:text-amber-600 transition-colors duration-500">
+              L E G A C Y
+            </h1>
+            <span className="text-[8px] uppercase tracking-[0.4em] text-gray-400 group-hover:tracking-[0.6em] transition-all duration-500">
+              Fine Jewelry
+            </span>
           </div>
+        </Link>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Homepage
-            </Link>
-            <Link to="/products" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Products
-            </Link>
-            <Link to="/admin" className="text-gray-700 hover:text-purple-600 font-medium transition">
-              Admin
-            </Link>
-          </nav>
+        {/* Right: Actions */}
+        <div className="flex items-center space-x-6">
+          {/* Search */}
+          <button className="text-gray-400 hover:text-amber-600 transition-colors p-2 hidden sm:block">
+            <Search size={20} strokeWidth={1.5} />
+          </button>
 
-          {/* User Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Login/Logout Button */}
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-600 hidden md:block">
-                  Hello, <span className="font-medium">{user?.name}</span>
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                >
-                  Log out
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition"
-              >
-                Log in as Admin
-              </Link>
-            )}
-
-            {/* Cart and Favorites (optional) */}
-            <div className="flex items-center space-x-2">
-              <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                <span className="sr-only">Yêu thích</span>
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {favoritesCount}
-                  </span>
-                )}
-              </button>
-              
-              <button className="p-2 rounded-full hover:bg-gray-100 transition relative">
-                <span className="sr-only">Giỏ hàng</span>
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+          {/* User Account */}
+          <div className="relative group">
+            <button className="text-gray-400 hover:text-amber-600 transition-colors p-2">
+              <User size={20} strokeWidth={1.5} />
+            </button>
+            
+            {/* User Dropdown */}
+            <div className="absolute right-0 top-full mt-4 w-64 bg-white shadow-2xl rounded-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+              {isAuthenticated ? (
+                <div className="p-2">
+                  <div className="px-4 py-3 border-b border-gray-50 mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Welcome</p>
+                    <p className="font-serif text-gray-900">{user?.name}</p>
+                  </div>
+                  <Link to="/admin" className="flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
+                    <Sparkles size={16} /> Admin Suite
+                  </Link>
+                  <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all text-left">
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="p-4 space-y-4">
+                  <p className="text-center text-xs text-gray-500">Access your digital atelier.</p>
+                  <Link to="/login" className="block w-full bg-black text-white py-3 rounded-full text-[10px] font-bold uppercase tracking-widest text-center hover:bg-amber-600 transition-colors shadow-lg">
+                    Authenticate
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Favorites */}
+          <Link to="/favorites" className="relative text-gray-400 hover:text-amber-600 transition-colors p-2">
+            <Heart size={20} strokeWidth={1.5} />
+            {favoritesCount > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+            )}
+          </Link>
+
+          {/* Cart */}
+          <Link to="/cart" className="relative text-gray-400 hover:text-amber-600 transition-colors p-2">
+            <ShoppingBag size={20} strokeWidth={1.5} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[9px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md">
+                {cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-24 left-0 w-full bg-white border-b border-gray-100 shadow-xl animate-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col p-6 space-y-6">
+             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold uppercase tracking-widest text-gray-900">Homepage</Link>
+             <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold uppercase tracking-widest text-gray-900">Collections</Link>
+             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold uppercase tracking-widest text-gray-900">Philosophy</Link>
+             <div className="h-px bg-gray-100 w-full"></div>
+             <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-sm font-bold uppercase tracking-widest text-amber-600">Admin Suite</Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

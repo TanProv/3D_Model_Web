@@ -7,11 +7,12 @@ import Model3D from "../models/Model3D.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Tạo folders nếu chưa tồn tại
+
 const modelFolder = "data/models";
 const thumbnailFolder = "data/thumbnails";
+const tryOnFolder = "data/tryons"; // Thêm folder cho ảnh Try-On
 
-[modelFolder, thumbnailFolder].forEach(folder => {
+[modelFolder, thumbnailFolder, tryOnFolder].forEach(folder => {
     if (!fs.existsSync(folder)) {
         fs.mkdirSync(folder, { recursive: true });
     }
@@ -34,6 +35,8 @@ const storage = multer.diskStorage({
             cb(null, modelFolder);
         } else if (file.fieldname === "thumbnail") {
             cb(null, thumbnailFolder);
+        } else if (file.fieldname === "tryOnImg") { // Xử lý trường tryOnImg
+            cb(null, tryOnFolder);
         } else {
             cb(new Error("Invalid field name"), null);
         }
@@ -55,6 +58,10 @@ const fileFilter = (req, file, cb) => {
         allowedImageTypes.includes(file.mimetype)
             ? cb(null, true)
             : cb(new Error("Invalid image file type"), false);
+    } else if (file.fieldname === "tryOnImg") { // Filter cho ảnh Try-On
+        allowedImageTypes.includes(file.mimetype)
+            ? cb(null, true)
+            : cb(new Error("Invalid try-on image file type"), false);
     } else {
         cb(new Error("Unknown fieldname"), false);
     }
@@ -72,7 +79,8 @@ const upload = multer({
 // Export middleware
 export const uploadModelFiles = upload.fields([
     { name: "model", maxCount: 1 },
-    { name: "thumbnail", maxCount: 1 }
+    { name: "thumbnail", maxCount: 1 },
+    { name: 'tryOnImg', maxCount: 1 }
 ]);
 
 // Helper: Delete file
@@ -84,6 +92,8 @@ const deleteFile = (filePath) => {
             actualPath = path.join(__dirname, "..", "data", "models", path.basename(filePath));
         } else if (filePath.startsWith("/thumbnails/")) {
             actualPath = path.join(__dirname, "..", "data", "thumbnails", path.basename(filePath));
+        } else if (filePath.startsWith("/tryons/")) { // Xử lý xóa file tryons
+            actualPath = path.join(__dirname, "..", "data", "tryons", path.basename(filePath));
         } else {
             console.warn("Unknown file path:", filePath);
             return;
@@ -108,6 +118,9 @@ const cleanupUploadedFiles = (files) => {
     if (files.thumbnail?.[0]) {
         deleteFile(`/thumbnails/${files.thumbnail[0].filename}`);
     }
+    if (files.tryOnImg?.[0]) { // Cleanup tryOnImg
+        deleteFile(`/tryons/${files.tryOnImg[0].filename}`);
+    }
 };
 
 // Helper: Get file format from extension
@@ -123,11 +136,12 @@ const getFileFormat = (filename) => {
 export const uploadModel = async (req, res) => {
     try {
         console.log("📦 Upload request received");
-        console.log("Files:", req.files);
-        console.log("Body:", req.body);
+        // console.log("Files:", req.files);
+        // console.log("Body:", req.body);
 
         const modelFile = req.files?.model?.[0];
         const thumbnailFile = req.files?.thumbnail?.[0];
+        const tryOnImgFile = req.files?.tryOnImg?.[0]; // Lấy file tryOnImg
 
         if (!modelFile) {
             cleanupUploadedFiles(req.files);
@@ -143,6 +157,7 @@ export const uploadModel = async (req, res) => {
 
         const modelPath = `/models/${modelFile.filename}`;
         const thumbnailPath = thumbnailFile ? `/thumbnails/${thumbnailFile.filename}` : null;
+        const tryOnImgPath = tryOnImgFile ? `/tryons/${tryOnImgFile.filename}` : null; // Path cho tryOnImg
         const format = getFileFormat(modelFile.filename);
 
         if (!format) {
@@ -156,6 +171,7 @@ export const uploadModel = async (req, res) => {
             description: description || null,
             modelPath,
             thumbnailPath,
+            tryOnImgPath, // Lưu vào DB (Đảm bảo model Sequelize đã có cột này)
             fileSize: modelFile.size,
             format
         });
@@ -168,6 +184,7 @@ export const uploadModel = async (req, res) => {
                 description: newModel.description,
                 modelPath: newModel.modelPath,
                 thumbnailPath: newModel.thumbnailPath,
+                tryOnImgPath: newModel.tryOnImgPath,
                 fileSize: newModel.fileSize,
                 format: newModel.format,
                 uploadDate: newModel.uploadDate
@@ -210,6 +227,7 @@ export const getAllModels = async (req, res) => {
                 description: model.description,
                 modelPath: model.modelPath,
                 thumbnailPath: model.thumbnailPath,
+                tryOnImgPath: model.tryOnImgPath, // Return tryOnImgPath
                 fileSize: model.fileSize,
                 format: model.format,
                 uploadDate: model.uploadDate
@@ -239,6 +257,7 @@ export const getModelById = async (req, res) => {
             description: model.description,
             modelPath: model.modelPath,
             thumbnailPath: model.thumbnailPath,
+            tryOnImgPath: model.tryOnImgPath, // Return tryOnImgPath
             fileSize: model.fileSize,
             format: model.format,
             uploadDate: model.uploadDate
@@ -265,6 +284,7 @@ export const updateModel = async (req, res) => {
         const { name, description } = req.body;
         const modelFile = req.files?.model?.[0];
         const thumbnailFile = req.files?.thumbnail?.[0];
+        const tryOnImgFile = req.files?.tryOnImg?.[0];
 
         // Update name and description
         if (name) model.name = name;
@@ -286,6 +306,14 @@ export const updateModel = async (req, res) => {
             model.thumbnailPath = `/thumbnails/${thumbnailFile.filename}`;
         }
 
+        // Update tryOnImg if provided
+        if (tryOnImgFile) {
+            if (model.tryOnImgPath) {
+                deleteFile(model.tryOnImgPath);
+            }
+            model.tryOnImgPath = `/tryons/${tryOnImgFile.filename}`;
+        }
+
         await model.save();
 
         res.status(200).json({
@@ -296,6 +324,7 @@ export const updateModel = async (req, res) => {
                 description: model.description,
                 modelPath: model.modelPath,
                 thumbnailPath: model.thumbnailPath,
+                tryOnImgPath: model.tryOnImgPath,
                 fileSize: model.fileSize,
                 format: model.format,
                 uploadDate: model.uploadDate
@@ -324,6 +353,9 @@ export const deleteModel = async (req, res) => {
         deleteFile(model.modelPath);
         if (model.thumbnailPath) {
             deleteFile(model.thumbnailPath);
+        }
+        if (model.tryOnImgPath) {
+            deleteFile(model.tryOnImgPath);
         }
 
         // Delete from database
@@ -363,6 +395,7 @@ export const searchModels = async (req, res) => {
                 description: model.description,
                 modelPath: model.modelPath,
                 thumbnailPath: model.thumbnailPath,
+                tryOnImgPath: model.tryOnImgPath,
                 fileSize: model.fileSize,
                 format: model.format,
                 uploadDate: model.uploadDate

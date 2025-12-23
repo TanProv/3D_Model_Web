@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Upload, Link as LinkIcon, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Upload, Link as LinkIcon, Loader, CheckCircle, AlertCircle, FileType, Image as ImageIcon } from 'lucide-react';
 import { tripoAPI } from '../services/api.js';
 
 const AIGenerator = ({ onGenerationComplete }) => {
@@ -17,8 +17,6 @@ const AIGenerator = ({ onGenerationComplete }) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
-      
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -29,37 +27,29 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleTextGenerate = async () => {
     if (!textPrompt.trim()) {
-      setStatus({ type: 'error', message: 'Please enter a description!' });
+      setStatus({ type: 'error', message: 'Please provide a detailed description.' });
       return;
     }
-
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Generating 3D model from text... (may take 2-5 minutes)' });
-
-      const response = await tripoAPI.generateFromText({
+      setStatus({ type: 'info', message: 'UwU AI is drafting your concept... (Estimated: 2-5 mins)' });
+      await tripoAPI.generateFromText({
         prompt: textPrompt,
         name: name || undefined,
         description: description || undefined
       });
-
       setStatus({ 
         type: 'success', 
-        message: 'Generation started! The model will appear in the list in a few minutes.' 
+        message: 'Concept drafted successfully. Model processing initiated.' 
       });
-
-      // Reset form
       setTimeout(() => {
-        setTextPrompt('');
-        setName('');
-        setDescription('');
-        setStatus(null);
+        resetForm();
         if (onGenerationComplete) onGenerationComplete();
       }, 3000);
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Error generating model!' 
+        message: error.response?.data?.message || 'Error generating concept.' 
       });
     } finally {
       setGenerating(false);
@@ -68,36 +58,29 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleImageUrlGenerate = async () => {
     if (!imageUrl.trim()) {
-      setStatus({ type: 'error', message: 'Please enter an image URL!' });
+      setStatus({ type: 'error', message: 'Please provide a valid image URL.' });
       return;
     }
-
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Generating 3D model from image... (may take 2-5 minutes)' });
-
-      const response = await tripoAPI.generateFromImageUrl({
+      setStatus({ type: 'info', message: 'Analyzing visual data... (Estimated: 2-5 mins)' });
+      await tripoAPI.generateFromImageUrl({
         imageUrl: imageUrl,
         name: name || undefined,
         description: description || undefined
       });
-
       setStatus({ 
         type: 'success', 
-        message: 'Generation started! The model will appear in the list in a few minutes.' 
+        message: 'Visual data processed. Model synthesis initiated.' 
       });
-
       setTimeout(() => {
-        setImageUrl('');
-        setName('');
-        setDescription('');
-        setStatus(null);
+        resetForm();
         if (onGenerationComplete) onGenerationComplete();
       }, 3000);
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Error generating model!' 
+        message: error.response?.data?.message || 'Error generating concept.' 
       });
     } finally {
       setGenerating(false);
@@ -106,38 +89,29 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleImageFileGenerate = async () => {
     if (!imageFile) {
-      setStatus({ type: 'error', message: 'Please select an image file!' });
+      setStatus({ type: 'error', message: 'Please upload a reference image.' });
       return;
     }
-
     try {
       setGenerating(true);
-      setStatus({ type: 'info', message: 'Uploading and generating 3D model... (may take 2-5 minutes)' });
-
+      setStatus({ type: 'info', message: 'Uploading reference material... (Estimated: 2-5 mins)' });
       const formData = new FormData();
       formData.append('image', imageFile);
       if (name) formData.append('name', name);
       if (description) formData.append('description', description);
-
-      const response = await tripoAPI.generateFromImageFile(formData);
-
+      await tripoAPI.generateFromImageFile(formData);
       setStatus({ 
         type: 'success', 
-        message: 'Generation started! The model will appear in the list in a few minutes.' 
+        message: 'Reference uploaded. Model synthesis initiated.' 
       });
-
       setTimeout(() => {
-        setImageFile(null);
-        setImagePreview(null);
-        setName('');
-        setDescription('');
-        setStatus(null);
+        resetForm();
         if (onGenerationComplete) onGenerationComplete();
       }, 3000);
     } catch (error) {
       setStatus({ 
         type: 'error', 
-        message: error.response?.data?.message || 'Error generating model!' 
+        message: error.response?.data?.message || 'Error generating concept.' 
       });
     } finally {
       setGenerating(false);
@@ -146,231 +120,161 @@ const AIGenerator = ({ onGenerationComplete }) => {
 
   const handleGenerate = () => {
     switch (activeTab) {
-      case 'text':
-        handleTextGenerate();
-        break;
-      case 'image-url':
-        handleImageUrlGenerate();
-        break;
-      case 'image-file':
-        handleImageFileGenerate();
-        break;
+      case 'text': handleTextGenerate(); break;
+      case 'image-url': handleImageUrlGenerate(); break;
+      case 'image-file': handleImageFileGenerate(); break;
     }
   };
 
+  const resetForm = () => {
+    setTextPrompt('');
+    setImageUrl('');
+    setImageFile(null);
+    setImagePreview(null);
+    setName('');
+    setDescription('');
+    setStatus(null);
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl">
-          <Sparkles className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            AI Generator - Create 3D models
-          </h2>
-          <p className="text-sm text-gray-600">
-            Powered by UwU
-          </p>
-        </div>
-      </div>
-
+    <div className="space-y-8">
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('text')}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === 'text'
-              ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          📝 Document
-        </button>
-        <button
-          onClick={() => setActiveTab('image-url')}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === 'image-url'
-              ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          🔗 Image URL
-        </button>
-        <button
-          onClick={() => setActiveTab('image-file')}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === 'image-file'
-              ? 'text-purple-600 border-b-2 border-purple-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          📸 Upload Image
-        </button>
+      <div className="flex p-1 bg-gray-50 rounded-xl border border-gray-100">
+        {[
+          { id: 'text', label: 'Text Prompt', icon: FileType },
+          { id: 'image-url', label: 'Image URL', icon: LinkIcon },
+          { id: 'image-file', label: 'Upload Image', icon: ImageIcon }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
+              activeTab === tab.id 
+                ? 'bg-white text-gray-900 shadow-sm' 
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <tab.icon size={14} />
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Status Message */}
-      {status && (
-        <div className={`mb-4 p-4 rounded-lg flex items-center gap-3 ${
-          status.type === 'success' ? 'bg-green-50 text-green-700' :
-          status.type === 'error' ? 'bg-red-50 text-red-700' :
-          'bg-blue-50 text-blue-700'
-        }`}>
-          {status.type === 'success' ? <CheckCircle className="w-5 h-5" /> :
-           status.type === 'error' ? <AlertCircle className="w-5 h-5" /> :
-           <Loader className="w-5 h-5 animate-spin" />}
-          <p className="text-sm font-medium">{status.message}</p>
-        </div>
-      )}
-
-      {/* Content based on active tab */}
-      <div className="space-y-4">
+      {/* Input Area */}
+      <div className="space-y-6">
         {activeTab === 'text' && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Model Description *
-              </label>
-              <textarea
-                value={textPrompt}
-                onChange={(e) => setTextPrompt(e.target.value)}
-                placeholder="Ví dụ: A golden diamond ring with intricate floral patterns..."
-                rows="4"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition resize-none"
-                disabled={generating}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Provide a detailed description in English for best results.
-              </p>
-            </div>
-          </>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Concept Description</label>
+            <textarea
+              value={textPrompt}
+              onChange={(e) => setTextPrompt(e.target.value)}
+              placeholder="e.g. A ring inspired by Martian architecture with red crystalline facets and floating gold bands..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
+              disabled={generating}
+            />
+            <p className="text-[10px] text-gray-400 italic text-right">Drafted in English for optimal results.</p>
+          </div>
         )}
 
         {activeTab === 'image-url' && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Image URL *
-              </label>
-              <div className="relative">
-                <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
-                  disabled={generating}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Clear images with good angles will produce more accurate results
-              </p>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Reference URL</label>
+            <div className="relative">
+              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/reference.jpg"
+                className="w-full bg-gray-50 border border-gray-200 pl-12 pr-4 py-4 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                disabled={generating}
+              />
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'image-file' && (
-          <>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Upload Image *
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-500 transition cursor-pointer">
-                <input
-                  type="file"
-                  id="imageFile"
-                  accept="image/jpeg,image/png,image/jpg,image/webp"
-                  onChange={handleImageFileChange}
-                  className="hidden"
-                  disabled={generating}
-                />
-                <label htmlFor="imageFile" className="cursor-pointer">
-                  {imagePreview ? (
-                    <div>
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="max-w-xs max-h-64 mx-auto rounded-lg shadow-lg mb-3"
-                      />
-                      <p className="text-sm text-gray-600">
-                        {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 font-medium mb-1">
-                        Click to select image
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG, WEBP (Max 10MB)
-                      </p>
-                    </div>
-                  )}
-                </label>
-              </div>
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Reference Upload</label>
+            <div className="border border-dashed border-gray-200 rounded-2xl p-8 text-center hover:bg-gray-50 transition-colors group relative cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={generating}
+              />
+              {imagePreview ? (
+                <div className="relative z-10">
+                   <img src={imagePreview} alt="Preview" className="h-32 mx-auto object-contain rounded-lg shadow-sm mb-2" />
+                   <p className="text-xs text-gray-500">{imageFile.name}</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                   <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto group-hover:bg-amber-50 group-hover:text-amber-600 transition-colors">
+                      <Upload size={20} />
+                   </div>
+                   <p className="text-xs text-gray-500 font-medium">Drop reference image here</p>
+                   <p className="text-[10px] text-gray-400 uppercase tracking-widest">PNG, JPG, WEBP • MAX 10MB</p>
+                </div>
+              )}
             </div>
-          </>
+          </div>
         )}
 
-        {/* Common fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Model Name (optional)
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Name for your model"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
-              disabled={generating}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Model Description (optional)
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="A brief description of your model"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition"
-              disabled={generating}
-            />
-          </div>
+        {/* Common Metadata Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div className="space-y-2">
+              <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Concept Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Project Alpha"
+                className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                disabled={generating}
+              />
+           </div>
+           <div className="space-y-2">
+              <label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Brief Notes</label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional notes..."
+                className="w-full bg-gray-50 border border-gray-200 px-4 py-3 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                disabled={generating}
+              />
+           </div>
         </div>
+      </div>
 
-        {/* Generate Button */}
+      {/* Status & Actions */}
+      <div className="space-y-4">
+        {status && (
+          <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-medium border ${
+            status.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' :
+            status.type === 'error' ? 'bg-red-50 text-red-700 border-red-100' :
+            'bg-amber-50 text-amber-700 border-amber-100'
+          }`}>
+            {status.type === 'success' ? <CheckCircle size={16} /> :
+             status.type === 'error' ? <AlertCircle size={16} /> :
+             <Loader className="animate-spin" size={16} />}
+            {status.message}
+          </div>
+        )}
+
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+          className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 shadow-lg"
         >
-          {generating ? (
-            <>
-              <Loader className="w-5 h-5 animate-spin" />
-              Generating model...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              Create 3D Model
-            </>
-          )}
+          {generating ? 'Processing Concept...' : 'Initiate Generation'}
         </button>
 
-        {/* Info */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4">
-          <p className="text-sm text-gray-700">
-            <strong>⏱️ Time:</strong> Approximately 2-5 minutes to complete<br/>
-            <strong>📦 Format:</strong> GLB (compatible with all browsers)<br/>
-            <strong>✨ Powered by:</strong> UwU - State-of-the-art 3D generation
-          </p>
-        </div>
+        <p className="text-[10px] text-center text-gray-400 uppercase tracking-widest">
+           Powered by UwU AI • Estimated Time: 2-5 Minutes
+        </p>
       </div>
     </div>
   );

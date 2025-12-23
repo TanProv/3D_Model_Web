@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../App.jsx';
+import { ArrowLeft, Lock, Loader2, AlertCircle } from 'lucide-react';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -16,104 +17,115 @@ function Login() {
     setError('');
     setLoading(true);
 
-    const result = login(email, password);
-    
-    if (result.success) {
-      navigate('/admin');
-    } else {
-      setError(result.message || 'Login failed');
-    }
-    
-    setLoading(false);
+    // Simulate network delay for effect
+    setTimeout(() => {
+        const result = login(email, password);
+        
+        if (result.success) {
+          navigate('/admin');
+        } else {
+          setError(result.message || 'Authentication failed');
+        }
+        setLoading(false);
+    }, 800);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Login Admin
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Jewelry 3D Gallery - Admin Model Upload
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white text-gray-900">
+      <div className="max-w-md w-full space-y-12">
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
+        {/* Header Section */}
+        <div className="text-center space-y-6">
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-amber-600 transition-colors"
+          >
+            <ArrowLeft size={14} /> Return to Atelier
+          </Link>
           
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="admin@jewelry.com"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
+          <div className="w-20 h-20 bg-gray-950 rounded-full flex items-center justify-center text-white mx-auto shadow-2xl">
+            <Lock size={32} strokeWidth={1.5} />
           </div>
           
-          <div>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-serif">Atelier Access</h1>
+            <p className="text-gray-500 text-sm font-light">Authenticate to manage the digital collection.</p>
+          </div>
+        </div>
+
+        {/* Login Card */}
+        <div className="bg-white rounded-3xl p-10 border border-gray-100 shadow-2xl space-y-8">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl flex items-center gap-3 text-xs font-medium">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="ml-4 text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                  Identity
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-6 py-4 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder:text-gray-300"
+                  placeholder="admin@jewelry.com"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="password" className="ml-4 text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                  Passphrase
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 px-6 py-4 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all placeholder:text-gray-300"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+            
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gray-950 text-white py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-amber-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {loading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Logging in...
-                </span>
-              ) : 'Login'}
+                <>
+                  <Loader2 className="animate-spin" size={16} /> Authenticating...
+                </>
+              ) : 'Enter Atelier'}
             </button>
+          </form>
+
+          {/* Default Credentials Hint (Styled minimally) */}
+          <div className="pt-6 border-t border-gray-100 text-center space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Demo Credentials</p>
+            <div className="flex flex-col gap-2 text-xs text-gray-500 font-mono bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              <div className="flex justify-between">
+                <span>User:</span>
+                <span className="text-gray-900">admin@jewelry.com</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Pass:</span>
+                <span className="text-gray-900">admin123</span>
+              </div>
+            </div>
           </div>
-          
-          <div className="text-center text-sm text-gray-600">
-            <p>Default login information:</p>
-            <p className="text-xs mt-1">Email: <code className="bg-gray-100 px-2 py-1 rounded">admin@jewelry.com</code></p>
-            <p className="text-xs mt-1">Password: <code className="bg-gray-100 px-2 py-1 rounded">admin123</code></p>
-          </div>
-        </form>
-        
-        <div className="text-center">
-          <Link 
-            to="/" 
-            className="text-purple-600 hover:text-purple-800 font-medium"
-          >
-            ← Return to homepage
-          </Link>
         </div>
       </div>
     </div>

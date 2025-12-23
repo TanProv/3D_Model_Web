@@ -1,18 +1,161 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Jewelry 3D Gallery - Nền tảng xem và quản lý trang sức 3D" />
+    <title>Jewelry 3D Gallery - Luxury Virtual Atelier</title>
     
-    <!-- Model Viewer Script -->
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Experience luxury jewelry in stunning 3D. AI-powered virtual try-on and design tools for the modern jewelry enthusiast." />
+    <meta name="keywords" content="jewelry, 3D, virtual try-on, AI design, luxury, diamonds, rings, necklaces" />
+    
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="Jewelry 3D Gallery - Luxury Virtual Atelier" />
+    <meta property="og:description" content="Experience luxury jewelry in stunning 3D with AI-powered virtual try-on." />
+    <meta property="og:type" content="website" />
+    
+    <!-- Model Viewer for 3D models -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     
-    <title>Jewelry 3D Gallery - Xem trang sức 3D</title>
+    <!-- MediaPipe Hands for Virtual Try-On -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    
+    <!-- Preconnect to CDNs for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://ajax.googleapis.com" />
+    
+    <!-- Custom Styles -->
+    <style>
+      /* Prevent FOUC (Flash of Unstyled Content) */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: #fcfbf7;
+      }
+      
+      /* Loading screen */
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      #loading-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        color: white;
+        font-size: 18px;
+        margin-top: 20px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+      }
+      
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #9333ea 0%, #db2777 100%);
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #be185d 100%);
+      }
+      
+      /* Slide-in animation for chat sidebar */
+      @keyframes slide-in {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      
+      .animate-slide-in {
+        animation: slide-in 0.3s ease-out;
+      }
+      
+      /* Luxury transition class */
+      .lux-transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading Jewelry Gallery...</div>
+    </div>
+    
+    <!-- React App Root -->
     <div id="root"></div>
+    
+    <!-- Main App Script -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Remove loading screen when React loads -->
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(function() {
+              loadingScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 500);
+      });
+      
+      // Handle MediaPipe loading errors
+      window.addEventListener('error', function(e) {
+        if (e.filename && e.filename.includes('mediapipe')) {
+          console.warn('MediaPipe loading error:', e.message);
+          console.info('Virtual Try-On may not work. Please refresh the page.');
+        }
+      });
+    </script>
   </body>
 </html>
